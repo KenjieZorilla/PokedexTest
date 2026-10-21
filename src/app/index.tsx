@@ -1,11 +1,13 @@
 import { Link } from "expo-router";
 import { useEffect, useState } from "react";
 import {
+  Button,
   Image,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View
 } from "react-native";
 
@@ -47,7 +49,7 @@ const colorsByType = {
 
 export default function Index() {
   const [pokemons, setPokemons] = useState<Pokemon[]>([]); //deconstructing
-  
+  const [pokemonSearch, setSearch] = useState<string>(""); //deconstructing
 
   console.log(JSON.stringify(pokemons[0], null, 2));
   useEffect(() => {
@@ -83,6 +85,30 @@ export default function Index() {
       } catch (e) {
         console.log(e);
       }
+    } else {
+       try {
+        const pokemonJSON = await fetch(
+          `https://pokeapi.co/api/v2/pokemon/${pokemonName}`,
+        );
+        
+        if (!pokemonJSON.ok) {
+          alert("Pokémon not found!");
+          return;
+        }
+
+        const details = await pokemonJSON.json();
+
+        const singlePokemon: Pokemon = {
+          name: details.name,
+          image: details.sprites.front_default, 
+          imageBack: details.sprites.back_default,
+          types: details.types,
+        };
+
+        setPokemons([singlePokemon]); 
+      } catch (e) {
+        console.log("Error loading single pokemon:", e);
+      }
     }
     
   }
@@ -94,6 +120,19 @@ export default function Index() {
         padding: 16,
       }}
     >
+      <Text style={styles.name}> Search</Text>
+      <TextInput 
+      onChangeText={setSearch} 
+      value={pokemonSearch} 
+      placeholder="Search Pokémon..."
+      style={{ borderWidth: 1, padding: 8, borderRadius: 8 }}
+      />
+      <Button 
+        title="Search" 
+        onPress={() => 
+          fetchPokemon(pokemonSearch.toLowerCase().trim())
+        } 
+      />
  
       {pokemons.map(
         (
