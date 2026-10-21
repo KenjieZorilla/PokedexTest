@@ -49,8 +49,6 @@ const colorsByType = {
 
 export default function Index() {
   const [pokemons, setPokemons] = useState<Pokemon[]>([]); //deconstructing
-
-  const [favoritePokemons, setFavoritePokemons] = useState<Pokemon[]>([]); //favorite pokemons
   const [pokemonSearch, setSearch] = useState<string>(""); //deconstructing
 
   console.log(JSON.stringify(pokemons[0], null, 2));
@@ -58,7 +56,7 @@ export default function Index() {
     fetchPokemon("");
   }, []); //empty array in dependency matrix means it runs ONLY ONCE upon page reload
 
-  async function fetchPokemon(pokemonName: string) {
+  async function fetchPokemon(pokemonName : string) {
     if (pokemonName === "") {
       try {
         const pokemonJSON = await fetch(
@@ -112,30 +110,7 @@ export default function Index() {
         console.log("Error loading single pokemon:", e);
       }
     }
-
-  }
-
-  function toggleFavorite(pokemonToAdd: Pokemon) {
-    let foundIndex = -1;
-    for (let i = 0; i < favoritePokemons.length; i++) {
-      if (favoritePokemons[i].name === pokemonToAdd.name) {
-        foundIndex = i;
-        break;
-      }
-    }
-
-    let newList = [];
-    for (let i = 0; i < favoritePokemons.length; i++) {
-      newList.push(favoritePokemons[i]);
-    }
-
-    if (foundIndex !== -1) {
-      newList.splice(foundIndex, 1);
-    } else {
-      newList.push(pokemonToAdd);
-    }
-
-    setFavoritePokemons(newList);
+    
   }
 
   return (
@@ -145,15 +120,6 @@ export default function Index() {
         padding: 16,
       }}
     >
-      {pokemons.map((pokemon) => {
-        //*Wrap Each Pokemon View in a <Pressable> element, making it interactable
-        //*Notice We changed it to Link to be able to switch/navigate to other Pages,
-        //*we can use onPress for Pressable and
-        // //*href for Link(here, we just name the file WITHOUT the file extension, so ./details instead of ./details.tsx)
-
-        //!IN THE VIEW below the link, I have an array of styles holding an inline elelmnts and a external stylesheet component(left to right application meaning that the inline(most right) is applied last and overrides the other styles)
-        const isFavorited = favoritePokemons.some((fav) => fav.name === pokemon.name);
-        return (
       <Text style={styles.name}> Search</Text>
       <TextInput 
       onChangeText={setSearch} 
@@ -179,20 +145,21 @@ export default function Index() {
 
           //!IN THE VIEW below the link, I have an array of styles holding an inline elelmnts and a external stylesheet component(left to right application meaning that the inline(most right) is applied last and overrides the other styles)
           <Link
-            href={{ pathname: "./details", params: { name: pokemon.name } }}
+            href={{pathname: "./details", params: {name: pokemon.name}}}  //this is where we can use tell where to navigate to
             key={pokemon.name}
             style={[
               styles.container,
+
               {
                 // @ts-ignore
                 backgroundColor: colorsByType[pokemon.types[0].type.name] + 90,
               },
-            ]}
-            asChild
-          >
-
+            ]} 
+            asChild>
             <Pressable>
-              <View style={{ width: "100%", alignItems: "center", padding: 10 }}>
+                <View>
+                <Text style={styles.name}> {pokemon.name} </Text>
+                <Text style={styles.type}>{pokemon.types[0].type.name}</Text>
 
                 <View style={{ flexDirection: "row" }}>
                   <Image
@@ -205,34 +172,11 @@ export default function Index() {
                     style={{ width: 100, height: 100 }} //this is an inlne style
                   />
                 </View>
-
-                <Text style={styles.name}> {pokemon.name} </Text>
-                <Text style={styles.type}>{pokemon.types[0].type.name}</Text>
               </View>
-              <Pressable
-                style={{
-                  backgroundColor: '#a4c4e7',
-                  paddingHorizontal: 28,
-                  borderRadius: 10,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  elevation: 3,
-                  margin: 10
-                }}
-                onPress={(e) => {
-                  e.stopPropagation();
-                  toggleFavorite(pokemon);
-                }}
-              >
-                <Text style={{ fontSize: 24 }}>
-                  {isFavorited ? "Favorited" : "Not Favorited"}
-                </Text>
-              </Pressable>
             </Pressable>
           </Link>
-        );
-      })}
-
+        ),
+      )}
     </ScrollView>
   );
 }
