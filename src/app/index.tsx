@@ -1,11 +1,13 @@
 import { Link } from "expo-router";
 import { useEffect, useState } from "react";
 import {
+  Button,
   Image,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   View
 } from "react-native";
 
@@ -49,6 +51,7 @@ export default function Index() {
   const [pokemons, setPokemons] = useState<Pokemon[]>([]); //deconstructing
 
   const [favoritePokemons, setFavoritePokemons] = useState<Pokemon[]>([]); //favorite pokemons
+  const [pokemonSearch, setSearch] = useState<string>(""); //deconstructing
 
   console.log(JSON.stringify(pokemons[0], null, 2));
   useEffect(() => {
@@ -83,6 +86,30 @@ export default function Index() {
         setPokemons(detailedPokemons); //contains image
       } catch (e) {
         console.log(e);
+      }
+    } else {
+       try {
+        const pokemonJSON = await fetch(
+          `https://pokeapi.co/api/v2/pokemon/${pokemonName}`,
+        );
+        
+        if (!pokemonJSON.ok) {
+          alert("Pokémon not found!");
+          return;
+        }
+
+        const details = await pokemonJSON.json();
+
+        const singlePokemon: Pokemon = {
+          name: details.name,
+          image: details.sprites.front_default, 
+          imageBack: details.sprites.back_default,
+          types: details.types,
+        };
+
+        setPokemons([singlePokemon]); 
+      } catch (e) {
+        console.log("Error loading single pokemon:", e);
       }
     }
 
@@ -127,6 +154,30 @@ export default function Index() {
         //!IN THE VIEW below the link, I have an array of styles holding an inline elelmnts and a external stylesheet component(left to right application meaning that the inline(most right) is applied last and overrides the other styles)
         const isFavorited = favoritePokemons.some((fav) => fav.name === pokemon.name);
         return (
+      <Text style={styles.name}> Search</Text>
+      <TextInput 
+      onChangeText={setSearch} 
+      value={pokemonSearch} 
+      placeholder="Search Pokémon..."
+      style={{ borderWidth: 1, padding: 8, borderRadius: 8 }}
+      />
+      <Button 
+        title="Search" 
+        onPress={() => 
+          fetchPokemon(pokemonSearch.toLowerCase().trim())
+        } 
+      />
+ 
+      {pokemons.map(
+        (
+          pokemon, //.map iterates over EACH pokemon from the pokemons array(grabbed freom the useState destructuring), creates a View
+        ) => (
+          //*Wrap Each Pokemon View in a <Pressable> element, making it interactable
+          //*Notice We changed it to Link to be able to switch/navigate to other Pages,
+          //*we can use onPress for Pressable and
+          // //*href for Link(here, we just name the file WITHOUT the file extension, so ./details instead of ./details.tsx)
+
+          //!IN THE VIEW below the link, I have an array of styles holding an inline elelmnts and a external stylesheet component(left to right application meaning that the inline(most right) is applied last and overrides the other styles)
           <Link
             href={{ pathname: "./details", params: { name: pokemon.name } }}
             key={pokemon.name}
